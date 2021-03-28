@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
 import { getHouseDetail } from '../../services/calls';
 import { useHousesStore } from '../../services/stores';
+import { getIfHouseIsFavorite, saveHouseAsFavorite } from '../../services/db';
 
 import {
   IconButton,
@@ -28,6 +30,18 @@ export const DetailScreen = ({ navigation }) => {
 
   const [loading, setLoading] = useState(true);
   const [houseDetail, setHouseDetail] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const checkIfHouseIsFavorite = async () => {
+    const isFavorite = await getIfHouseIsFavorite(selectedHouse.property_id);
+    setIsFavorite(isFavorite);
+  };
+
+  const saveFavoriteHouse = async () => {
+    await saveHouseAsFavorite(selectedHouse.property_id);
+    Alert.alert('Imóvel salvo como favorito com sucesso!');
+    setIsFavorite(true);
+  };
 
   useEffect(() => {
     async function callGetHouseDetail() {
@@ -37,7 +51,8 @@ export const DetailScreen = ({ navigation }) => {
       setLoading(false);
     }
     callGetHouseDetail();
-  }, []);
+    checkIfHouseIsFavorite();
+  }, [selectedHouse]);
 
   const onClickArrowBack = () => {
     navigation.goBack();
@@ -56,7 +71,16 @@ export const DetailScreen = ({ navigation }) => {
           transparent
           onPress={onClickArrowBack}
         />
-        <IconButton iconName="star-outline" transparent />
+
+        {isFavorite ? (
+          <IconButton iconName="star" transparent />
+        ) : (
+          <IconButton
+            onPress={saveFavoriteHouse}
+            iconName="star-outline"
+            transparent
+          />
+        )}
       </ImageBackground>
 
       {loading ? (
