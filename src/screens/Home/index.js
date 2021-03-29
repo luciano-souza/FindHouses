@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { Title, IconButton, Input, HousesList, Loader } from '../../components';
-import { getHousesCall } from '../../services/calls';
+import {
+  Title,
+  IconButton,
+  Input,
+  HousesList,
+  Loader,
+  FilterModal,
+} from '../../components';
+// import { getHousesCall } from '../../services/calls';
 import { useHousesStore } from '../../services/stores';
+import { useHousesHooks } from '../../services/hooks';
 
 import {
   ScreenContainer,
@@ -13,37 +21,53 @@ import {
 } from './styles';
 
 export const HomeScreen = () => {
-  // const [housesListData, setHousesListData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { onGetHouses } = useHousesHooks();
+  // const [loading, setLoading] = useState(true);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
-  const { housesList, setHousesList } = useHousesStore();
+  const { housesList, loadingHousesList } = useHousesStore();
 
-  async function callGetHouses() {
-    const result = await getHousesCall();
-    // setHousesListData(result.properties ? result.properties : []);
-    setHousesList(result.properties ? result.properties : []);
+  // async function callGetHouses() {
+  //   const result = await getHousesCall();
+  //   setHousesList(result.properties ? result.properties : []);
 
-    setLoading(false);
-  }
+  //   setLoading(false);
+  // }
 
   useEffect(() => {
-    callGetHouses();
+    // callGetHouses();
+    onGetHouses();
   }, []);
+
+  const openFilterModal = () => {
+    setFilterModalVisible(true);
+  };
+
+  const closeFilterModal = () => {
+    setFilterModalVisible(false);
+  };
 
   return (
     <ScreenContainer>
-      <HousesList data={housesList} loading={loading}>
+      <HousesList
+        data={housesList}
+        loading={loadingHousesList}
+        onEndReached={onGetHouses}>
         <ContentContainer>
           <TopContainer>
             <TitleContainer>
               <Title>Encontre aqui seu Imóvel</Title>
             </TitleContainer>
-            <IconButton iconName="filter" />
+            <IconButton onPress={openFilterModal} iconName="filter" />
           </TopContainer>
           <Input label="Localização" placeholder="Endereco" />
-          {loading && <Loader />}
+          {loadingHousesList && <Loader />}
         </ContentContainer>
       </HousesList>
+
+      {filterModalVisible && (
+        <FilterModal onClose={closeFilterModal} visible={filterModalVisible} />
+      )}
     </ScreenContainer>
   );
 };

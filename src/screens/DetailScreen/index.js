@@ -5,7 +5,11 @@ import 'intl/locale-data/jsonp/en';
 
 import { getHouseDetail } from '../../services/calls';
 import { useHousesStore } from '../../services/stores';
-import { getIfHouseIsFavorite, saveHouseAsFavorite } from '../../services/db';
+import {
+  getIfHouseIsFavorite,
+  saveHouseAsFavorite,
+  removeHouseAsFavorite,
+} from '../../services/db';
 
 import {
   IconButton,
@@ -38,9 +42,15 @@ export const DetailScreen = ({ navigation }) => {
   };
 
   const saveFavoriteHouse = async () => {
-    await saveHouseAsFavorite(selectedHouse.property_id);
-    Alert.alert('Imóvel salvo como favorito com sucesso!');
-    setIsFavorite(true);
+    if (isFavorite) {
+      await removeHouseAsFavorite(selectedHouse.property_id);
+      Alert.alert('Imóvel removido como favorito com sucesso!');
+      setIsFavorite(false);
+    } else {
+      await saveHouseAsFavorite(selectedHouse.property_id);
+      Alert.alert('Imóvel salvo como favorito com sucesso!');
+      setIsFavorite(true);
+    }
   };
 
   useEffect(() => {
@@ -72,7 +82,14 @@ export const DetailScreen = ({ navigation }) => {
           onPress={onClickArrowBack}
         />
 
-        {isFavorite ? (
+        <IconButton
+          onPress={saveFavoriteHouse}
+          iconName={isFavorite ? 'star' : 'star-outline'}
+          transparent
+          fill={isFavorite}
+        />
+
+        {/* {isFavorite ? (
           <IconButton iconName="star" transparent />
         ) : (
           <IconButton
@@ -80,7 +97,7 @@ export const DetailScreen = ({ navigation }) => {
             iconName="star-outline"
             transparent
           />
-        )}
+        )} */}
       </ImageBackground>
 
       {loading ? (
@@ -92,7 +109,9 @@ export const DetailScreen = ({ navigation }) => {
           <DetailTitle>{houseDetail.address.line}</DetailTitle>
 
           <DetailSubTitle>
-            {formattedPrice.format(houseDetail.community.price_max)}
+            {formattedPrice.format(
+              houseDetail.community?.price_max || houseDetail.price,
+            )}
           </DetailSubTitle>
 
           <DetailText>
@@ -113,13 +132,13 @@ export const DetailScreen = ({ navigation }) => {
             <HouseFeatureCard
               iconName="bed-king-outline"
               iconLib="materialcommunity"
-              featureText={`${houseDetail.community.beds_min} - ${houseDetail.community.beds_max} beds`}
+              featureText={`${houseDetail.community?.beds_min} - ${houseDetail.community?.beds_max} beds`}
             />
 
             <HouseFeatureCard
               iconName="bath"
               iconLib="fontawesome"
-              featureText={`${houseDetail.community.baths_min} - ${houseDetail.community.baths_max} baths`}
+              featureText={`${houseDetail.community?.baths_min} - ${houseDetail.community?.baths_max} baths`}
             />
           </FeaturesContainer>
 

@@ -55,3 +55,14 @@ export const getIfHouseIsFavorite = async houseId => {
 
   return false;
 };
+
+export const removeHouseAsFavorite = async houseId => {
+  const savedFavorites = await getData(FAVORITE_KEY);
+
+  if (savedFavorites) {
+    const arrayFavorites = JSON.parse(savedFavorites);
+    const newSavedFavorites = arrayFavorites.filter(h => h !== houseId);
+
+    await saveData(FAVORITE_KEY, JSON.stringify(newSavedFavorites));
+  }
+};
